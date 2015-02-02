@@ -93,6 +93,12 @@ public class PrincipalLogin extends JFrame {
 		contentPane.add(txtPassword);
 		
 		JButton btnCrearUsuario = new JButton("Crear Usuario");
+		btnCrearUsuario.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				cargarCrearUsuario();
+			}
+		});
 		btnCrearUsuario.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
 		btnCrearUsuario.setBounds(183, 460, 141, 29);
 		contentPane.add(btnCrearUsuario);
@@ -160,6 +166,34 @@ public class PrincipalLogin extends JFrame {
 			}
 			
 		}
+		
+	}
+	
+	
+	public void cargarCrearUsuario(){
+		
+		try{
+			
+			
+			// CREAMOS LA CONEXION CON LA BASE DE DATOS.
+			conexion = DriverManager.getConnection("jdbc:mysql://localhost/oscaro", "alex", "1234");
+		
+			JOptionPane.showMessageDialog(null,"Redireccionándolo al menú de crear usuarios...", "CONECTANDOSE.....", 1);
+			Thread.sleep(2000);
+			PantallaCrearUsuario pantallaUsuario = new PantallaCrearUsuario(conexion);
+			pantallaUsuario.setVisible(true);
+			dispose();
+				
+		}catch (SQLException e) {
+			
+			JOptionPane.showMessageDialog(null, "Error en la conexión","CONECTANDOSE....",0);
+			
+		} catch (InterruptedException e) {
+			
+			e.printStackTrace();
+		}
+			
+		
 		
 	}
 }
