@@ -23,7 +23,9 @@ import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
+import Tablas.Piezas;
 import Tablas.Usuarios;
 
 public class PrincipalLogin extends JFrame {
@@ -35,6 +37,8 @@ public class PrincipalLogin extends JFrame {
 	private JPasswordField txtPassword;
 	
 	private String usuario, password;
+	
+	public static ArrayList<Piezas> carrito= new ArrayList<Piezas>();
 	/**
 	 * Launch the application.
 	 */
@@ -145,9 +149,9 @@ public class PrincipalLogin extends JFrame {
 				
 				if(login.validarUsuario(conexion)){
 					
-					JOptionPane.showMessageDialog(null,	txtUsuario.getText()+"  BIENVENIDO A LA APP DE OSCARO RECAMBIOS", "CONECTANDOSE.....", 1);
+					JOptionPane.showMessageDialog(null,	"  Bienvenido a la APP de Oscaro Recambios "+txtUsuario.getText(), "CONECTANDOSE.....", 1);
 					Thread.sleep(2000);
-					Principal pantallaPrincipal = new Principal(conexion,login);
+					Principal pantallaPrincipal = new Principal(conexion,login, login.comprobarAdmin(conexion));
 					pantallaPrincipal.setVisible(true);
 					dispose();//Cierro la ventana actual
 					

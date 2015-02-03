@@ -17,13 +17,13 @@ public class Usuarios implements java.io.Serializable {
 	private String userPass;
 	private DatosPersonales datosPersonales;
 	private ArrayList<Pedidos> pedidosUsuario;
-	private boolean administrador;
+	private String administrador;
 	
 
 	public Usuarios() {
 	}
 
-	public Usuarios(String userAlias, String userPass, DatosPersonales datosPersonaleses, ArrayList<Pedidos> pedidosUsuario, boolean administrador) {
+	public Usuarios(String userAlias, String userPass, DatosPersonales datosPersonaleses, ArrayList<Pedidos> pedidosUsuario, String administrador) {
 		this.userAlias = userAlias;
 		this.userPass = userPass;
 		this.datosPersonales = datosPersonaleses;
@@ -73,12 +73,12 @@ public class Usuarios implements java.io.Serializable {
 		this.pedidosUsuario= pedidosUsuario;
 	}
 	
-	public boolean getAdministrador(){
+	public String getAdministrador(){
 		
 		return this.administrador;
 	}
 	
-	public void setAdministrador(boolean administrador){
+	public void setAdministrador(String administrador){
 		
 		this.administrador=administrador;
 	}
@@ -86,6 +86,7 @@ public class Usuarios implements java.io.Serializable {
 	public boolean validarUsuario(Connection conexion){
 		
 		boolean existe=false;
+		String admin;
 		
 		try{
 			
@@ -101,7 +102,7 @@ public class Usuarios implements java.io.Serializable {
 				this.userCodigo= user.getInt("user_codigo");
 				this.userAlias=user.getString("user_alias");
 				this.userPass=user.getString("user_pass");
-				this.administrador=user.getBoolean("administrador");
+				this.administrador=user.getString("user_admin");
 				
 				existe=true;
 			}
@@ -118,6 +119,49 @@ public class Usuarios implements java.io.Serializable {
 		
 		
 		return existe;
+	}
+	
+	public boolean comprobarAdmin(Connection conexion){
+		
+	
+		String admin;
+		
+		try{
+			
+			// CODIGO QUE NOS PROTEGE DE LA INYECCION SQL, UTILIZAMOS CONSULTAS PARAMETRIZADAS. LE PASAMOS LOS PARAMETROS NOMBRE Y PASS
+			PreparedStatement pstmt= conexion.prepareStatement("select * from usuarios where user_alias=? and user_pass=md5(?)");
+			pstmt.setString(1, this.userAlias);
+			pstmt.setString(2, this.userPass);
+			ResultSet user =pstmt.executeQuery();
+			
+			//Guardamos el codigo del usuario introducido anteriormente.
+			while(user.next()){
+			
+				//this.userCodigo= user.getInt("user_codigo");
+				//this.userAlias=user.getString("user_alias");
+				//this.userPass=user.getString("user_pass");
+				this.administrador=user.getString("user_admin");
+				
+			}
+		
+			user.close();
+		
+			pstmt.close();
+		}catch(SQLException ex){
+			
+			JOptionPane.showMessageDialog(null,	"Los datos introducidos son incorrectos.", "Buscando usuario....", 0);
+		}
+		
+			if(this.administrador.equals("S")){
+				
+				return true;
+			}else{
+				
+				return false;
+			}
+		
+		
+		
 	}
 
 }

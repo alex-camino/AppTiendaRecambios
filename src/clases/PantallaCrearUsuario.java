@@ -9,7 +9,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
+//import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +24,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import java.util.Date;
 
 import Tablas.Usuarios;
 
@@ -56,6 +61,8 @@ public class PantallaCrearUsuario extends JFrame {
 	public PantallaCrearUsuario(Connection conexion) {
 		
 		this.conexion=conexion;
+		
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1260, 660);
 		contentPane = new JPanel();
@@ -317,12 +324,12 @@ public class PantallaCrearUsuario extends JFrame {
 				pstmt.setString(2, pass1);
 				pstmt.executeUpdate();
 				
-				JOptionPane.showInputDialog(null,	"Usuario creaado correctamente.", "Creando usuario....", 0);
-				creado=true;
+				JOptionPane.showMessageDialog(null,	"Usuario creaado correctamente.", "Creando usuario....", 1);
+    			creado=true;
 				pstmt.close();
 			}catch(SQLException ex){
 				
-				JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Creando usuario....", 0);
+				JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Creando usuario....", 1);
 				creado=false;
 			}
 			
@@ -333,7 +340,7 @@ public class PantallaCrearUsuario extends JFrame {
 	
 	public void cargarAddDatosUsuario(String nombreUsuario){
 		
-		String nombre,apellidos,direccion,telefono,email,dni;
+		String nombre,apellidos,direccion,telefono,email,dni, fecha;
 		Date fechaNac;
 		
 		nombre=txtNombre.getText();
@@ -342,9 +349,21 @@ public class PantallaCrearUsuario extends JFrame {
 		telefono=txtTelefono.getText();
 		email=txtEmail.getText();
 		dni=txtDni.getText();
-		fechaNac=fechaNacimiento.getDate();
+		
+		
+		//fechaNacimiento.getD
 		
 		try{
+			
+			
+			SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
+			DateFormat fechaFormateada = new SimpleDateFormat("yyyy-MM-dd");
+		
+			fechaNac = (Date) fechaNacimiento.getDate();
+			fecha=formatoFecha.format(fechaNac);
+			
+			//fechaNac=(Date) formatoFecha.parse((fechaFormateada.format(fechaNacimiento.getDate()).toString()));
+			
 			
 			PreparedStatement pstmt= conexion.prepareStatement("insert into datosPersonales(dp_dni,dp_nombre,dp_apellidos,dp_direccion,dp_telefono,dp_email,dp_fechanac) "
 			+"VALUES (?,?,?,?,?,?,?) where user_codigo in (select user_codigo from usuarios where user_alias=?)");
@@ -354,18 +373,23 @@ public class PantallaCrearUsuario extends JFrame {
 			pstmt.setString(4, direccion);
 			pstmt.setString(5, telefono);
 			pstmt.setString(6, email);
-			pstmt.setDate(7, (java.sql.Date) fechaNac);
+			pstmt.setDate(7, (java.sql.Date) formatoFecha.parse(fecha));
 			pstmt.setString(8, nombreUsuario);
 
 			pstmt.executeUpdate();
 			
-			JOptionPane.showInputDialog(null,	"Datos de usuario añadidos correctamente.", "Añadiendo datos usuario....", 0);
+			JOptionPane.showMessageDialog(null,	"Datos de usuario añadidos correctamente.", "Añadiendo datos usuario....", 0);
 			creado=true;
 			pstmt.close();
 		}catch(SQLException ex){
 			
 			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Creando usuario....", 0);
 			creado=false;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		
 	}
 }

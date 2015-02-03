@@ -24,7 +24,7 @@ public class Principal extends JFrame {
 	
 	public static ArrayList<Piezas> carrito = new ArrayList<Piezas>();
 	
-	public Principal(final Connection conexion, Usuarios usuario) {
+	public Principal(final Connection conexion, Usuarios usuario, Boolean esAdmin) {
 		
 		setTitle("Oscaro Recambios");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -37,7 +37,7 @@ public class Principal extends JFrame {
 		setLocationRelativeTo(null);
 				
 
-		Tienda pantallaTienda = new Tienda(contentPane, usuario, conexion);
+		Tienda pantallaTienda = new Tienda(contentPane, usuario, conexion, esAdmin);
 		pantallaTienda.setVisible(true);
 		contentPane.add(pantallaTienda);
 

@@ -2,6 +2,9 @@ package clases;
 
 import javax.swing.JPanel;
 
+import Tablas.CatEspecifica;
+import Tablas.Piezas;
+import Tablas.Proveedores;
 import Tablas.Usuarios;
 
 import java.sql.Connection;
@@ -9,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.List;
 import java.awt.BorderLayout;
@@ -49,24 +53,33 @@ public class Tienda extends JPanel {
 	private DefaultTableModel modelo;
 	private Object[][] filas;
 	private String[] columnas={"ID", "Referencia", "Nombre", "Descripci\u00F3n", "Stock", "Precio", "Proveedor", "SubCategoria"};
+	private String[] columnasCarrito={"ID", "Referencia", "Nombre", "Descripci\u00F3n", "Cantidad", "Precio Unidad", "Proveedor", "SubCategoria"};
 	private JScrollPane scrollPane;
 	private JButton btnCuenta;
 	private JButton btnPedidos;
 	private JButton btnCarrito;
+	private JButton btnAddPieza;
+	private JButton btnRealizarPedido;
 	private JComboBox comboBoxMarcas;
 	private JComboBox comboBoxModelos;
 	private JComboBox comboBoxTipos;
 	private JComboBox comboBoxCategorias;
 	private JComboBox comboBoxSubcategorias;
+	private boolean esAdmin;
+	private JPanel panelAbajo;
+	private JPanel panelBotones;
+	private JPanel panelAbajoUser;
+	private JLabel lblCantProductos;
+	private int cantidadPiezas=0;
 	
 	/**
 	 * Create the panel.
 	 */
-	public Tienda(JPanel contentPane, Usuarios usuario, final Connection conexion) {
+	public Tienda(JPanel contentPane, Usuarios usuario, final Connection conexion, boolean esAdmin) {
 
 		this.contentPane=contentPane;
 		this.conexion=conexion;
-
+		this.esAdmin=esAdmin;
 		setBounds(100, 100, 1260, 660);
 		setLayout(new GridLayout(1, 0, 0, 0));
 		
@@ -205,7 +218,7 @@ public class Tienda extends JPanel {
 		scrollPane = new JScrollPane();
 		panelCentral.add(scrollPane);
 		
-		JPanel panelBotones = new JPanel();
+		panelBotones = new JPanel();
 		panel.add(panelBotones, BorderLayout.WEST);
 		
 		btnCuenta = new JButton("Tu cuenta");
@@ -213,6 +226,12 @@ public class Tienda extends JPanel {
 		btnPedidos = new JButton("Pedidos");
 		
 		btnCarrito = new JButton("Carrito");
+		btnCarrito.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				mostrarProductosCarrito();
+			}
+		});
 		GroupLayout gl_panelBotones = new GroupLayout(panelBotones);
 		gl_panelBotones.setHorizontalGroup(
 			gl_panelBotones.createParallelGroup(Alignment.LEADING)
@@ -246,8 +265,8 @@ public class Tienda extends JPanel {
 		JLabel cuadroImagen = new JLabel("");
 		cuadroImagen.setIcon((Icon) logo);
 		
-		JLabel lblCantProductos = new JLabel("");
-		
+		lblCantProductos = new JLabel("");
+		lblCantProductos.setText(Integer.toString(cantidadPiezas));
 		JLabel lblProductos = new JLabel("Productos");
 		
 		JLabel lblReferenciaPieza = new JLabel("Referencia Pieza:");
@@ -257,26 +276,33 @@ public class Tienda extends JPanel {
 		
 		JButton btnBuscar_1 = new JButton("Buscar");
 		btnBuscar_1.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		
+		btnAddPieza = new JButton("Añadir Pieza");
+		btnAddPieza.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				
+				obtenerPiezaTabla();
+			}
+		});
 		GroupLayout gl_panelDerecha = new GroupLayout(panelDerecha);
 		gl_panelDerecha.setHorizontalGroup(
 			gl_panelDerecha.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelDerecha.createSequentialGroup()
-					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.TRAILING)
-						.addGroup(Alignment.LEADING, gl_panelDerecha.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(btnBuscar_1, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
-						.addGroup(Alignment.LEADING, gl_panelDerecha.createSequentialGroup()
-							.addContainerGap()
-							.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblCantProductos)
-								.addGroup(gl_panelDerecha.createSequentialGroup()
-									.addComponent(cuadroImagen)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-										.addComponent(lblProductos)
-										.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)))
-								.addComponent(lblReferenciaPieza)))
-						.addComponent(txtReferencia, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap()
+					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
+						.addComponent(btnAddPieza, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+						.addGroup(Alignment.TRAILING, gl_panelDerecha.createParallelGroup(Alignment.LEADING)
+							.addComponent(lblCantProductos)
+							.addGroup(gl_panelDerecha.createSequentialGroup()
+								.addComponent(cuadroImagen)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
+									.addComponent(lblProductos)
+									.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE))))
+						.addComponent(btnBuscar_1, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+						.addComponent(txtReferencia, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblReferenciaPieza, Alignment.TRAILING))
 					.addContainerGap())
 		);
 		gl_panelDerecha.setVerticalGroup(
@@ -293,19 +319,91 @@ public class Tienda extends JPanel {
 					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
 						.addComponent(lblCantProductos)
 						.addComponent(lblProductos))
-					.addGap(112)
+					.addGap(50)
+					.addComponent(btnAddPieza, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED, 157, Short.MAX_VALUE)
 					.addComponent(lblReferenciaPieza)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(txtReferencia, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addGap(18)
 					.addComponent(btnBuscar_1, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(240, Short.MAX_VALUE))
+					.addGap(32))
 		);
 		panelDerecha.setLayout(gl_panelDerecha);
+		
+		panelAbajo = new JPanel();
+		panel.add(panelAbajo, BorderLayout.SOUTH);
+		
+		JButton btnPedidosUser = new JButton("Pedidos Usuarios");
+		btnPedidosUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				
+			}
+		});
+		
+		JButton btnBDPiezas = new JButton("BBDD_Piezas");
+		btnBDPiezas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		
+		JButton btnBbddusuarios = new JButton("BBDD_Usuarios");
+		
+		JButton btnTuCuenta = new JButton("Tu cuenta");
+		GroupLayout gl_panelAbajo = new GroupLayout(panelAbajo);
+		gl_panelAbajo.setHorizontalGroup(
+			gl_panelAbajo.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelAbajo.createSequentialGroup()
+					.addGap(150)
+					.addComponent(btnTuCuenta)
+					.addGap(83)
+					.addComponent(btnPedidosUser, GroupLayout.PREFERRED_SIZE, 137, GroupLayout.PREFERRED_SIZE)
+					.addGap(92)
+					.addComponent(btnBDPiezas)
+					.addGap(93)
+					.addComponent(btnBbddusuarios)
+					.addContainerGap(335, Short.MAX_VALUE))
+		);
+		gl_panelAbajo.setVerticalGroup(
+			gl_panelAbajo.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelAbajo.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panelAbajo.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnTuCuenta, GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+						.addComponent(btnPedidosUser, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnBDPiezas, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnBbddusuarios, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap())
+		);
+		panelAbajo.setLayout(gl_panelAbajo);
+		
+		panelAbajoUser = new JPanel();
+		panel.add(panelAbajoUser, BorderLayout.SOUTH);
+		
+		btnRealizarPedido = new JButton("Realizar Pedido");
+		GroupLayout gl_panelAbajoUser = new GroupLayout(panelAbajoUser);
+		gl_panelAbajoUser.setHorizontalGroup(
+			gl_panelAbajoUser.createParallelGroup(Alignment.LEADING)
+				.addGroup(Alignment.TRAILING, gl_panelAbajoUser.createSequentialGroup()
+					.addContainerGap(1115, Short.MAX_VALUE)
+					.addComponent(btnRealizarPedido)
+					.addContainerGap())
+		);
+		gl_panelAbajoUser.setVerticalGroup(
+			gl_panelAbajoUser.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelAbajoUser.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(btnRealizarPedido, GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+					.addContainerGap())
+		);
+		panelAbajoUser.setLayout(gl_panelAbajoUser);
 		
 		//mostrarProductos();
 		obtenerMarcas();
 		obtenerCategorias();
+		
+		comprobarAdmin();
 	}
 	
 	
@@ -494,7 +592,10 @@ public class Tienda extends JPanel {
 		
 		tabla.setModel(modelo);
 		scrollPane.setViewportView(tabla);
-		
+		//Habilito los botones
+		btnCarrito.setEnabled(true);
+		btnAddPieza.setEnabled(true);
+
 		
 	}
 	
@@ -547,7 +648,13 @@ public class Tienda extends JPanel {
 				fila[3]=rs.getString("pie_descripcion");
 				fila[4]=rs.getInt("pie_cantidad");
 				fila[5]=rs.getFloat("pie_precio");
-				fila[6]=rs.getInt("pro_codigo");
+				
+				Proveedores nuevoProveedor = new Proveedores();
+				
+				nuevoProveedor.setProCodigo(rs.getInt("pro_codigo"));
+			    obtenerInfoProveedor(nuevoProveedor);
+			    
+				fila[6]=nuevoProveedor.getProNombre();
 				fila[7]=nombreSubcategoria;
 						
 				modelo.addRow(fila);
@@ -566,4 +673,233 @@ public class Tienda extends JPanel {
 				
 		return encontrado;
 	}
+	
+	public void comprobarAdmin(){
+		
+		if(this.esAdmin){
+			
+			//System.out.println("HOLA HOLA HOLA");
+			panelBotones.setVisible(false);
+			panelAbajoUser.setVisible(false);
+
+		}else{
+			
+			//System.out.println("ABURRIDOSS");
+			panelAbajo.setVisible(false);
+			btnCarrito.setEnabled(false);
+			btnAddPieza.setEnabled(false);
+			panelAbajoUser.setVisible(true);
+			btnRealizarPedido.setEnabled(false);
+			
+		}
+	}
+	
+	public void obtenerPiezaTabla(){
+		
+		
+		int opcion=tabla.getSelectedRow();
+		int codPieza, cantidadPiezas=0;
+		float precio;
+		String referencia, nombre, descripcion, proveedor, subcategoria, cantidad;
+		
+		if(opcion==-1){
+			
+			JOptionPane.showMessageDialog(null, "Debe seleccionar un producto para poder añadirlo.","Advertencia",JOptionPane.WARNING_MESSAGE);
+		}else{
+			
+			
+			Proveedores nuevoProveedor= new Proveedores();
+			CatEspecifica nuevaSubcat = new CatEspecifica();
+			Piezas pieza1 = new Piezas();
+			
+			//Obtengo la información de la fila seleccionada.
+			codPieza=(int) tabla.getValueAt(opcion, 0);
+			referencia=tabla.getValueAt(opcion, 1).toString();
+			nombre=tabla.getValueAt(opcion, 2).toString();
+			descripcion=tabla.getValueAt(opcion, 3).toString();	
+			precio=(float) tabla.getValueAt(opcion, 5);
+			proveedor=tabla.getValueAt(opcion, 6).toString();
+			subcategoria=tabla.getValueAt(opcion, 7).toString();
+					
+			boolean error=false;
+			
+			
+			do{
+				
+				try{
+					
+					cantidad = JOptionPane.showInputDialog(null, "Cuantas unidades quiere?", "Añadiendo pieza al carrito.....", 3);
+					
+					cantidadPiezas=Integer.parseInt(cantidad);
+					
+					error=false;
+					
+				}catch(NumberFormatException ex){
+					
+					JOptionPane.showMessageDialog(null,	"Debe introducir numeros.", "Añadiendo pieza al carrito.....", 0);
+					error=true;
+				}
+				
+			}while(error);
+			
+			nuevoProveedor.setProNombre(proveedor);
+			obtenerInfoProveedor(nuevoProveedor);
+			nuevaSubcat.setCatEspNombre(subcategoria);
+			obtenerInfoSubcategorias(nuevaSubcat);
+			
+			
+			pieza1.setPieCodigo(codPieza);
+			pieza1.setPieReferencia(referencia);
+			pieza1.setPieNombre(nombre);
+			pieza1.setPieDescripcion(descripcion);
+			pieza1.setPieCantidad(cantidadPiezas);
+			pieza1.setPiePrecio(precio);
+			pieza1.setProveedores(nuevoProveedor);
+			pieza1.setCatEspecifica(nuevaSubcat);
+			
+			
+			//PIEZA AÑADIDA AL CARRITO
+			PrincipalLogin.carrito.add(pieza1);
+			this.cantidadPiezas++;
+			lblCantProductos.setText(Integer.toString(this.cantidadPiezas));
+			
+			JOptionPane.showMessageDialog(null,"Pieza añadida al carrito.", "Añadiendo Piezas al carrito.....", 1);
+		}
+	}
+	
+	public void obtenerInfoProveedor(Proveedores proveedor){
+		
+		PreparedStatement pstmt;
+		try{
+			
+			if(proveedor.getProCodigo()!=null){
+				//Buscando el codido del tipo
+				pstmt= conexion.prepareStatement("select * from proveedores where pro_codigo=?");
+				pstmt.setInt(1, proveedor.getProCodigo());
+			}else{
+				
+				//Buscando el codido del tipo
+				pstmt= conexion.prepareStatement("select * from proveedores where pro_nombre=?");
+				pstmt.setString(1, proveedor.getProNombre());
+			}
+			
+			ResultSet rs =pstmt.executeQuery();
+			
+			while(rs.next()){
+			
+				proveedor.setProNombre(rs.getString("pro_nombre"));
+				proveedor.setProTelefono(rs.getString("pro_telefono"));
+				proveedor.setProDireccion(rs.getString("pro_direccion"));
+				proveedor.setProNumcuenta(rs.getString("pro_numcuenta"));
+			}
+		
+			rs.close();
+			pstmt.close();
+			
+			
+			
+		}catch(SQLException ex){
+			
+			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Buscando proveedores....", 0);
+		}	
+
+	}
+	
+	public void obtenerInfoSubcategorias(CatEspecifica subCategoria){
+		
+		PreparedStatement pstmt;
+		try{
+			
+			if(subCategoria.getCatEspCodigo()!=null){
+				
+				pstmt= conexion.prepareStatement("select * from cat_especifica where cat_esp_codigo=?");
+				pstmt.setInt(1, subCategoria.getCatEspCodigo());
+			}else{
+				
+				pstmt= conexion.prepareStatement("select * from cat_especifica where cat_esp_nombre=?");
+				pstmt.setString(1, subCategoria.getCatEspNombre());
+			}
+			
+			
+			ResultSet rs =pstmt.executeQuery();
+			
+			while(rs.next()){
+			
+				subCategoria.setCatEspCodigo(rs.getInt("cat_esp_codigo"));
+				subCategoria.setCatEspNombre(rs.getString("cat_esp_nombre"));
+				
+			}
+		
+			rs.close();
+			pstmt.close();
+			
+			
+			
+		}catch(SQLException ex){
+			
+			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Buscando subcategorias....", 0);
+		}	
+
+	}
+	
+	
+	
+	//////////////////////////////////////////// CARRITO ////////////////////////////////////////////////////
+	
+	public void mostrarProductosCarrito(){
+		
+		boolean encontrado;
+		
+		tabla = new JTable();
+		
+		modelo = new DefaultTableModel(this.filas, this.columnasCarrito);
+		
+		if(PrincipalLogin.carrito.size()!=0){
+
+			
+				for(int i=0;i<PrincipalLogin.carrito.size();i++){
+					
+					Object[] fila = new Object[8];
+					
+					fila[0]=PrincipalLogin.carrito.get(i).getPieCodigo();
+					fila[1]=PrincipalLogin.carrito.get(i).getPieReferencia();
+					fila[2]=PrincipalLogin.carrito.get(i).getPieNombre();
+					fila[3]=PrincipalLogin.carrito.get(i).getPieDescripcion();
+					fila[4]=PrincipalLogin.carrito.get(i).getPieCantidad();
+					fila[5]=PrincipalLogin.carrito.get(i).getPiePrecio();	    
+					fila[6]=PrincipalLogin.carrito.get(i).getProveedores().getProNombre();
+					fila[7]=PrincipalLogin.carrito.get(i).getCatEspecifica().getCatEspNombre();
+							
+					modelo.addRow(fila);
+				}
+				
+				
+					
+				tabla.setModel(modelo);
+				scrollPane.setViewportView(tabla);
+				
+		
+				/* Para que no se puedan modificar los campos
+				 * Aporte: David.
+				 */
+				for (int j = 0; j < tabla.getColumnCount(); j++) {
+		
+					Class<?> col_class = tabla.getColumnClass(j);
+					tabla.setDefaultEditor(col_class, null); // remove editor
+		
+				}
+			
+		}else{
+			
+			JOptionPane.showMessageDialog(null, "No existe piezas en el carrito","Advertencia",JOptionPane.WARNING_MESSAGE);
+		}
+		
+		tabla.setModel(modelo);
+		scrollPane.setViewportView(tabla);
+		btnRealizarPedido.setEnabled(true);
+
+		
+	}
+	
+	
 }
