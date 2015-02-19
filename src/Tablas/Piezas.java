@@ -1,6 +1,12 @@
 package Tablas;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+
+import javax.swing.JOptionPane;
 
 
 public class Piezas implements java.io.Serializable {
@@ -121,5 +127,33 @@ public class Piezas implements java.io.Serializable {
 		this.lineasPedidos = lineasPedidos;
 	}
 
+	public int obtenerCodigoPieza(Connection conexion){
+		
+		int codigo;
+		
+		
+		try{
+			
+			
+			PreparedStatement pstmt= conexion.prepareStatement("select pie_codigo from piezas where pie_referencia=?");
+			pstmt.setString(1, this.pieReferencia);
+			ResultSet pieza =pstmt.executeQuery();
+			
 	
+			while(pieza.next()){
+			
+				pieCodigo=pieza.getInt("pie_codigo");
+			}
+		
+			pieza.close();
+			pstmt.close();
+			
+		}catch(SQLException ex){
+			
+			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Buscando piezas....", 0);
+		}	
+		
+		return codigo=this.pieCodigo;
+		
+	}
 }

@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import java.awt.Font;
 
@@ -43,11 +44,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 
-public class Tienda extends JPanel {
+public class visualizarProductosModificar extends JPanel {
 
 	private JPanel contentPane;
-	private Usuarios user;
-	private ImageIcon logo = new ImageIcon("/Users/Alex/Eclipse/Proyecto_AplicacionRecambios/logoCarrito.png");
 	private Connection conexion;
 	private JTextField txtReferencia;
 	private JTable tabla;
@@ -56,35 +55,23 @@ public class Tienda extends JPanel {
 	private String[] columnas={"ID", "Referencia", "Nombre", "Descripci\u00F3n", "Stock", "Precio", "Proveedor", "SubCategoria"};
 	private String[] columnasCarrito={"ID", "Referencia", "Nombre", "Descripci\u00F3n", "Proveedor", "SubCategoria","Cantidad", "Precio Unidad", "Subtotal"};
 	private JScrollPane scrollPane;
-	private JButton btnCuenta;
-	private JButton btnPedidos;
-	private JButton btnCarrito;
-	private JButton btnAddPieza;
-	private JButton btnBDPiezas;
-	private JButton btnBbddusuarios;
-	private JButton btnTuCuenta;
-	private JButton btnRealizarPedido;
-	private JButton btnPedidosUser;
+	private JButton btnModificarPieza;
 	private JComboBox comboBoxMarcas;
 	private JComboBox comboBoxModelos;
 	private JComboBox comboBoxTipos;
 	private JComboBox comboBoxCategorias;
 	private JComboBox comboBoxSubcategorias;
-	private boolean esAdmin;
-	private JPanel panelAbajo;
 	private JPanel panelBotones;
-	private JLabel lblCantProductos;
 	private int cantidadPiezas=0;
 	
 	/**
 	 * Create the panel.
 	 */
-	public Tienda(JPanel contentPane, Usuarios usuario, final Connection conexion, boolean esAdmin) {
+	public visualizarProductosModificar(final JPanel contentPane,final Connection conexion) {
 
 		this.contentPane=contentPane;
 		this.conexion=conexion;
-		this.esAdmin=esAdmin;
-		this.user=usuario;
+		
 		setBounds(100, 100, 1260, 660);
 		setLayout(new GridLayout(1, 0, 0, 0));
 		
@@ -226,179 +213,111 @@ public class Tienda extends JPanel {
 		panelBotones = new JPanel();
 		panel.add(panelBotones, BorderLayout.WEST);
 		
-		btnCuenta = new JButton("Tu cuenta");
+		JLabel lblReferenciaPieza = new JLabel("Referencia / ");
+		JLabel lblDescripcinPieza = new JLabel("Descripción Pieza");
 		
-		btnPedidos = new JButton("Pedidos");
+		txtReferencia = new JTextField();
+		txtReferencia.setColumns(10);
 		
-		btnCarrito = new JButton("Carrito");
-		btnCarrito.addActionListener(new ActionListener() {
+		
+		JButton btnBuscar_1 = new JButton("Buscar");
+		btnBuscar_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				mostrarProductosCarrito();
+				buscarReferenciaPieza();
 			}
 		});
+		btnBuscar_1.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		
 		GroupLayout gl_panelBotones = new GroupLayout(panelBotones);
 		gl_panelBotones.setHorizontalGroup(
 			gl_panelBotones.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelBotones.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panelBotones.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(btnPedidos, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(btnCuenta, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(btnCarrito, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addGroup(gl_panelBotones.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblReferenciaPieza)
+						.addComponent(lblDescripcinPieza))
 					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+				.addGroup(gl_panelBotones.createSequentialGroup()
+					.addGap(15)
+					.addComponent(btnBuscar_1)
+					.addContainerGap(16, Short.MAX_VALUE))
+				.addGroup(gl_panelBotones.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(txtReferencia, GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+					.addContainerGap())
 		);
 		gl_panelBotones.setVerticalGroup(
 			gl_panelBotones.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelBotones.createSequentialGroup()
-					.addGap(95)
-					.addComponent(btnCuenta, GroupLayout.PREFERRED_SIZE, 54, GroupLayout.PREFERRED_SIZE)
-					.addGap(49)
-					.addComponent(btnPedidos, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE)
-					.addGap(39)
-					.addComponent(btnCarrito, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(199, Short.MAX_VALUE))
+					.addGap(28)
+					.addComponent(lblReferenciaPieza)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(lblDescripcinPieza)
+					.addGap(32)
+					.addComponent(txtReferencia, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED, 111, Short.MAX_VALUE)
+					.addComponent(btnBuscar_1, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
+					.addGap(261))
 		);
 		panelBotones.setLayout(gl_panelBotones);
 		
 		JPanel panelDerecha = new JPanel();
 		panel.add(panelDerecha, BorderLayout.EAST);
 		
-		JLabel lblNewLabel = new JLabel("Carrito");
-		lblNewLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
-		
-		JLabel cuadroImagen = new JLabel("");
-		cuadroImagen.setIcon((Icon) logo);
-		
-		lblCantProductos = new JLabel("");
-		lblCantProductos.setText(Integer.toString(cantidadPiezas));
-		JLabel lblProductos = new JLabel("Productos");
-		
-		JLabel lblReferenciaPieza = new JLabel("Referencia Pieza:");
-		
-		txtReferencia = new JTextField();
-		txtReferencia.setColumns(10);
-		
-		JButton btnBuscar_1 = new JButton("Buscar");
-		btnBuscar_1.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
-		
-		btnAddPieza = new JButton("Añadir Pieza");
-		btnAddPieza.addActionListener(new ActionListener() {
+		btnModificarPieza = new JButton("Modificar Pieza");
+		btnModificarPieza.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 				
 				obtenerPiezaTabla();
 			}
 		});
+		
+		JButton btnAddPieza = new JButton("Añadir Pieza");
+		btnAddPieza.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				contentPane.removeAll();
+				addProductos nuevoProducto = new addProductos(contentPane, conexion);
+				nuevoProducto.setVisible(true);
+				contentPane.add(nuevoProducto);
+
+				SwingUtilities.updateComponentTreeUI(nuevoProducto);
+				
+			}
+		});
+		
+		JButton btnEliminarPieza = new JButton("Eliminar Pieza");
 		GroupLayout gl_panelDerecha = new GroupLayout(panelDerecha);
 		gl_panelDerecha.setHorizontalGroup(
 			gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelDerecha.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnAddPieza, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
-						.addGroup(Alignment.TRAILING, gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-							.addComponent(lblCantProductos)
-							.addGroup(gl_panelDerecha.createSequentialGroup()
-								.addComponent(cuadroImagen)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-									.addComponent(lblProductos)
-									.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE))))
-						.addComponent(btnBuscar_1, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
-						.addComponent(txtReferencia, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblReferenciaPieza, Alignment.TRAILING))
-					.addContainerGap())
+				.addGroup(Alignment.TRAILING, gl_panelDerecha.createSequentialGroup()
+					.addContainerGap(17, Short.MAX_VALUE)
+					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.TRAILING)
+						.addComponent(btnEliminarPieza, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGroup(gl_panelDerecha.createParallelGroup(Alignment.TRAILING, false)
+							.addComponent(btnAddPieza, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(btnModificarPieza, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)))
+					.addGap(14))
 		);
 		gl_panelDerecha.setVerticalGroup(
-			gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelDerecha.createSequentialGroup()
-					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelDerecha.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(cuadroImagen))
-						.addGroup(gl_panelDerecha.createSequentialGroup()
-							.addGap(18)
-							.addComponent(lblNewLabel)))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_panelDerecha.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblCantProductos)
-						.addComponent(lblProductos))
-					.addGap(50)
-					.addComponent(btnAddPieza, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED, 157, Short.MAX_VALUE)
-					.addComponent(lblReferenciaPieza)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(txtReferencia, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(18)
-					.addComponent(btnBuscar_1, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
-					.addGap(32))
+			gl_panelDerecha.createParallelGroup(Alignment.TRAILING)
+				.addGroup(Alignment.LEADING, gl_panelDerecha.createSequentialGroup()
+					.addGap(31)
+					.addComponent(btnAddPieza, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+					.addGap(48)
+					.addComponent(btnModificarPieza, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+					.addGap(62)
+					.addComponent(btnEliminarPieza, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(258, Short.MAX_VALUE))
 		);
 		panelDerecha.setLayout(gl_panelDerecha);
-		
-		panelAbajo = new JPanel();
-		panel.add(panelAbajo, BorderLayout.SOUTH);
-		
-		btnPedidosUser = new JButton("Pedidos Usuarios");
-		btnPedidosUser.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				
-			}
-		});
-		
-		btnBDPiezas = new JButton("BBDD_Piezas");
-		btnBDPiezas.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		
-		btnBbddusuarios = new JButton("BBDD_Usuarios");
-		
-		
-		btnTuCuenta = new JButton("Tu cuenta");
-		btnRealizarPedido = new JButton("Realizar Pedido");
-		btnRealizarPedido.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				crearPedido();
-			}
-		});
-		GroupLayout gl_panelAbajo = new GroupLayout(panelAbajo);
-		gl_panelAbajo.setHorizontalGroup(
-			gl_panelAbajo.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_panelAbajo.createSequentialGroup()
-					.addContainerGap(182, Short.MAX_VALUE)
-					.addComponent(btnTuCuenta)
-					.addGap(95)
-					.addComponent(btnPedidosUser, GroupLayout.PREFERRED_SIZE, 137, GroupLayout.PREFERRED_SIZE)
-					.addGap(96)
-					.addComponent(btnBDPiezas)
-					.addGap(102)
-					.addComponent(btnBbddusuarios)
-					.addGap(133)
-					.addComponent(btnRealizarPedido)
-					.addContainerGap())
-		);
-		gl_panelAbajo.setVerticalGroup(
-			gl_panelAbajo.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelAbajo.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelAbajo.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnRealizarPedido, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnBbddusuarios, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnBDPiezas, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnPedidosUser, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnTuCuenta, GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
-					.addContainerGap())
-		);
-		panelAbajo.setLayout(gl_panelAbajo);
 		
 		//mostrarProductos();
 		obtenerMarcas();
 		obtenerCategorias();
 		
-		comprobarAdmin();
 	}
 	
 	
@@ -588,8 +507,8 @@ public class Tienda extends JPanel {
 		tabla.setModel(modelo);
 		scrollPane.setViewportView(tabla);
 		//Habilito los botones
-		btnCarrito.setEnabled(true);
-		btnAddPieza.setEnabled(true);
+		//btnCarrito.setEnabled(true);
+		btnModificarPieza.setEnabled(true);
 
 		
 	}
@@ -669,33 +588,6 @@ public class Tienda extends JPanel {
 		return encontrado;
 	}
 	
-	public void comprobarAdmin(){
-		
-		if(this.esAdmin){
-			
-			//System.out.println("HOLA HOLA HOLA");
-			panelBotones.setVisible(false);
-			panelAbajo.setVisible(true);
-			btnBDPiezas.setVisible(true);
-		    btnBbddusuarios.setVisible(true);
-			btnTuCuenta.setVisible(true);
-			btnPedidosUser.setVisible(true);
-			btnRealizarPedido.setVisible(false);
-
-		}else{
-			
-			//System.out.println("ABURRIDOSS");
-			btnBDPiezas.setVisible(false);
-		    btnBbddusuarios.setVisible(false);
-			btnTuCuenta.setVisible(false);
-			btnRealizarPedido.setVisible(true);
-			btnCarrito.setEnabled(false);
-			btnAddPieza.setEnabled(false);
-			btnPedidosUser.setVisible(false);
-			btnRealizarPedido.setEnabled(false);
-			
-		}
-	}
 	
 	public void obtenerPiezaTabla(){
 		
@@ -720,30 +612,11 @@ public class Tienda extends JPanel {
 			referencia=tabla.getValueAt(opcion, 1).toString();
 			nombre=tabla.getValueAt(opcion, 2).toString();
 			descripcion=tabla.getValueAt(opcion, 3).toString();	
+			cantidadPiezas=(int)tabla.getValueAt(opcion, 4);
 			precio=(float) tabla.getValueAt(opcion, 5);
 			proveedor=tabla.getValueAt(opcion, 6).toString();
 			subcategoria=tabla.getValueAt(opcion, 7).toString();
-					
-			boolean error=false;
-			
-			
-			do{
 				
-				try{
-					
-					cantidad = JOptionPane.showInputDialog(null, "Cuantas unidades quiere?", "Añadiendo pieza al carrito.....", 3);
-					
-					cantidadPiezas=Integer.parseInt(cantidad);
-					
-					error=false;
-					
-				}catch(NumberFormatException ex){
-					
-					JOptionPane.showMessageDialog(null,	"Debe introducir numeros.", "Añadiendo pieza al carrito.....", 0);
-					error=true;
-				}
-				
-			}while(error);
 			
 			nuevoProveedor.setProNombre(proveedor);
 			obtenerInfoProveedor(nuevoProveedor);
@@ -760,13 +633,12 @@ public class Tienda extends JPanel {
 			pieza1.setProveedores(nuevoProveedor);
 			pieza1.setCatEspecifica(nuevaSubcat);
 			
-			
-			//PIEZA AÑADIDA AL CARRITO
-			PrincipalLogin.carrito.add(pieza1);
-			this.cantidadPiezas++;
-			lblCantProductos.setText(Integer.toString(this.cantidadPiezas));
-			
-			JOptionPane.showMessageDialog(null,"Pieza añadida al carrito.", "Añadiendo Piezas al carrito.....", 1);
+			contentPane.removeAll();
+			ModificarProductos nuevoProducto = new ModificarProductos(contentPane, conexion,pieza1);
+			nuevoProducto.setVisible(true);
+			contentPane.add(nuevoProducto);
+
+			SwingUtilities.updateComponentTreeUI(nuevoProducto);
 		}
 	}
 	
@@ -845,51 +717,52 @@ public class Tienda extends JPanel {
 
 	}
 	
-	
-	
-	//////////////////////////////////////////// CARRITO ////////////////////////////////////////////////////
-	
-	public void mostrarProductosCarrito(){
+	public void buscarReferenciaPieza(){
 		
-		boolean encontrado;
-		float total = 0, subtotal;
 		
-		tabla = new JTable();
+		tabla = new JTable();	
+		modelo = new DefaultTableModel(filas, columnas);
 		
-		modelo = new DefaultTableModel(this.filas, this.columnasCarrito);
+		boolean encontrado=false;
 		
-		if(PrincipalLogin.carrito.size()!=0){
-
+		try{
 			
-				for(int i=0;i<PrincipalLogin.carrito.size();i++){
-					
-					Object[] fila = new Object[9];
-					
-					fila[0]=PrincipalLogin.carrito.get(i).getPieCodigo();
-					fila[1]=PrincipalLogin.carrito.get(i).getPieReferencia();
-					fila[2]=PrincipalLogin.carrito.get(i).getPieNombre();
-					fila[3]=PrincipalLogin.carrito.get(i).getPieDescripcion();	    
-					fila[4]=PrincipalLogin.carrito.get(i).getProveedores().getProNombre();
-					fila[5]=PrincipalLogin.carrito.get(i).getCatEspecifica().getCatEspNombre();
-					fila[6]=PrincipalLogin.carrito.get(i).getPieCantidad();
-					fila[7]=PrincipalLogin.carrito.get(i).getPiePrecio();
-	
-					subtotal=(PrincipalLogin.carrito.get(i).getPiePrecio()*PrincipalLogin.carrito.get(i).getPieCantidad());
-					fila[8]=subtotal;	
-					
-					modelo.addRow(fila);
-					
-					total=total+subtotal;
-				}
-				
-				//Asignamos una fila a la tabla indicando el valor total de la suma de todos los productos.
-				Object[] fila = new Object[9];
-				
-				fila[7]="SUBTOTAL";
-				fila[8]=total;
-				modelo.addRow(fila);	
-				///////////////////////////
+			PreparedStatement pstmt = conexion.prepareStatement("select *from piezas where pie_descripcion like '%"+txtReferencia.getText()+"%' OR pie_referencia='"+txtReferencia.getText()+"';");
+			ResultSet rs =pstmt.executeQuery();
 			
+			while(rs.next()){
+			
+				Object[] fila = new Object[8];
+			
+				fila[0]=rs.getInt("pie_codigo");
+				fila[1]=rs.getString("pie_referencia");
+				fila[2]=rs.getString("pie_nombre");
+				fila[3]=rs.getString("pie_descripcion");
+				fila[4]=rs.getInt("pie_cantidad");
+				fila[5]=rs.getFloat("pie_precio");
+				
+				Proveedores nuevoProveedor = new Proveedores();
+				CatEspecifica nuevaSubCat = new CatEspecifica();
+				
+				nuevoProveedor.setProCodigo(rs.getInt("pro_codigo"));
+			    obtenerInfoProveedor(nuevoProveedor);
+			    
+			    nuevaSubCat.setCatEspCodigo(rs.getInt("cat_esp_codigo"));
+			    obtenerInfoSubcategorias(nuevaSubCat);
+			    
+				fila[6]=nuevoProveedor.getProNombre();
+				fila[7]=nuevaSubCat.getCatEspNombre();
+						
+				modelo.addRow(fila);
+				
+				encontrado=true;
+			}
+			
+			rs.close();
+			pstmt.close();
+			
+			if(encontrado){
+				
 				tabla.setModel(modelo);
 				scrollPane.setViewportView(tabla);
 				
@@ -903,88 +776,23 @@ public class Tienda extends JPanel {
 					tabla.setDefaultEditor(col_class, null); // remove editor
 		
 				}
-			
-		}else{
-			
-			JOptionPane.showMessageDialog(null, "No existe piezas en el carrito","Advertencia",JOptionPane.WARNING_MESSAGE);
-		}
-		
-		tabla.setModel(modelo);
-		scrollPane.setViewportView(tabla);
-		btnRealizarPedido.setEnabled(true);
-
-		
-	}
-	
-	public void crearPedido(){
-		
-		
-		int numPedido=0;
-		float total=0;
-		String respuesta;
-		
-		try{
-			
-			//Creamos el pedido.
-			PreparedStatement pstmt= conexion.prepareStatement("insert into pedidos(ped_estado,user_codigo) VALUES (?,?)");
-			pstmt.setString(1, "En proceso");
-			pstmt.setInt(2, this.user.getUserCodigo());
-			pstmt.executeUpdate();
-			
-			//Buscamos el codigo del pedido
-			pstmt= conexion.prepareStatement("select ped_codigo from pedidos where user_codigo=?");
-			pstmt.setInt(1, this.user.getUserCodigo());
-			ResultSet rs =pstmt.executeQuery();
-			
-			while(rs.next()){
-			
-				numPedido=rs.getInt("ped_codigo");
-			}
-			
-			for(int i=0;i<PrincipalLogin.carrito.size();i++){
 				
-				
-				
-				//Insertamos la pieza 
-				pstmt=conexion.prepareStatement("insert into lineas_pedido(lin_descripcion,lin_cantidad,lin_precio,pie_codigo, ped_codigo) values (?,?,?,?,?)");
-				pstmt.setString(1,PrincipalLogin.carrito.get(i).getPieDescripcion());
-				pstmt.setInt(2, PrincipalLogin.carrito.get(i).getPieCantidad());
-				pstmt.setFloat(3, (float) ((PrincipalLogin.carrito.get(i).getPiePrecio()*1.21)*PrincipalLogin.carrito.get(i).getPieCantidad()));
-				pstmt.setInt(4, PrincipalLogin.carrito.get(i).getPieCodigo());
-				pstmt.setInt(5, numPedido);
-				pstmt.executeUpdate();
-				
-				total=total+ (float) ((PrincipalLogin.carrito.get(i).getPiePrecio()*1.21)*PrincipalLogin.carrito.get(i).getPieCantidad());
-				
-			}
-			
-			
-			respuesta=JOptionPane.showInputDialog(null, "Desea confirmar el pedido?", "Confirmando el pedido.....", 3);
-			
-			if(respuesta.equalsIgnoreCase("si")){
-				pstmt=conexion.prepareStatement("update pedidos set ped_estado='CONFIRMADO', ped_importe="+total+", fecha_hora=SYSDATE() where ped_codigo="+numPedido);
-				pstmt.executeUpdate();
-				
-				JOptionPane.showMessageDialog(null,	"Pedido creaado correctamente.", "Confirmando pedido....", 1);
 				
 			}else{
 				
-				pstmt=conexion.prepareStatement("delete from pedidos where ped_codigo="+numPedido);
-				pstmt.executeUpdate();
-				JOptionPane.showMessageDialog(null,	"El pedido no se creo..", "Cancelando pedido....", 1);
-				
+				JOptionPane.showMessageDialog(null, "No existen piezas","Advertencia",JOptionPane.WARNING_MESSAGE);
 			}
 			
-			rs.close();
-			pstmt.close();
-		
-			
+			tabla.setModel(modelo);
+			scrollPane.setViewportView(tabla);
 			
 		}catch(SQLException ex){
 			
-			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Creando pedido....", 0);
-			System.out.println(ex.getMessage());
-		}
+			JOptionPane.showMessageDialog(null,	"Error en la consulta.", "Buscando pieza....", 0);
+		}	
+		
+
+		
+		
 	}
-	
 }

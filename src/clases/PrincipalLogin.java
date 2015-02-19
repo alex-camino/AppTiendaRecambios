@@ -64,7 +64,7 @@ public class PrincipalLogin extends JFrame {
 	 */
 	public PrincipalLogin() throws SQLException {
 		
-				
+		setTitle("Logueandose...");		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 670, 628);
 		contentPane = new JPanel();
@@ -141,7 +141,7 @@ public class PrincipalLogin extends JFrame {
 			try{
 				
 				// CREAMOS LA CONEXION CON LA BASE DE DATOS.
-				conexion = DriverManager.getConnection("jdbc:mysql://localhost/oscaro", "alex", "1234");
+				conexion = DriverManager.getConnection("jdbc:mysql://localhost/bbdd_oscaro", "root", "");
 				
 				login.setUserAlias(usuario);
 				login.setUserPass(password);
@@ -149,11 +149,24 @@ public class PrincipalLogin extends JFrame {
 				
 				if(login.validarUsuario(conexion)){
 					
-					JOptionPane.showMessageDialog(null,	"  Bienvenido a la APP de Oscaro Recambios "+txtUsuario.getText(), "CONECTANDOSE.....", 1);
-					Thread.sleep(2000);
-					Principal pantallaPrincipal = new Principal(conexion,login, login.comprobarAdmin(conexion));
-					pantallaPrincipal.setVisible(true);
-					dispose();//Cierro la ventana actual
+					if(login.getAdministrador().equals("N")){
+						
+						JOptionPane.showMessageDialog(null,	"  Bienvenido a la APP de Oscaro Recambios "+txtUsuario.getText(), "CONECTANDOSE.....", 1);
+						Thread.sleep(1000);
+						Principal pantallaPrincipal = new Principal(conexion,login, login.comprobarAdmin(conexion));
+						pantallaPrincipal.setVisible(true);
+						dispose();//Cierro la ventana actual
+						
+						
+					}else{
+						
+						JOptionPane.showMessageDialog(null,	"  APP de Oscaro Recambios (Modo Administrador) ", "CONECTANDOSE.....", 1);
+						Thread.sleep(1000);
+						TiendaAdministrador pantallaAdmin = new TiendaAdministrador(conexion, login);
+						pantallaAdmin.setVisible(true);
+						dispose();//Cierro la ventana actual
+					}
+					
 					
 				}else{
 					
